@@ -1,0 +1,56 @@
+Soft Sidetone Generator
+=======================
+
+A Arduino-based CW sidetone generator. The tone is generated in software and converted to a analog signal via PWM and a low-pass RC-filter.
+
+The end goal is a custom board with a ATtiny MCU. In it's simplest configuration it shouldn't be much more complex than the common 555-timer based circuit but still deliver a smooth, clickless sine wave signal.
+
+Features
+--------------------
+
+* Debounced key input.
+* Square wave tone.
+
+Backlog
+-------
+* Sine wave tone using PWM <http://www.atmel.com/Images/doc2542.pdf>.
+* Adjustable frequency 500-1000Hz.
+* Shaped wave like: <http://www.solorb.com/elect/hamcirc/sidetone/>.
+* Record and replay.
+* Keyer output.
+
+BOM
+---
+
+TBD
+
+Circuit
+-------
+
+### Using an Arduino board:
+
+Input and non-audio output:
+
+ * LED attached from pin 4 to ground
+ * Key attached from pin 2 to +5V
+ * 10K resistor attached from pin 2 to ground
+  
+Low pass filter (692 Hz):
+
+* 5K resistor attached from pin 3 (PWM) to output
+* 0.047uF cap from output to ground
+* output to amplifier
+
+
+### Custom board
+
+TBD
+
+Build
+-----
+
+export ARDUINODIR=/Users/daijo/Code/Arduino/
+export SERIALDEV=/dev/tty.usbserial-A6007ZuZ
+export BOARD=atmega328
+make
+make upload
