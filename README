@@ -60,7 +60,8 @@ Requires the Arduino IDE installed in ARDUINODIR.
     make
     make upload
 
-For the ATtiny custom board/kit you also need the arduino-tiny additions found at <http://code.google.com/p/arduino-tiny/>.
+For the ATtiny custom board/kit you also need the arduino-tiny additions found at <http://code.google.com/p/arduino-tiny/>. \
+You can also use my fork of Arduino with arduino-tiny <https://github.com/daijo/Arduino>.
 
     export BOARD=at2313at1
     export ARDUINOPORT=tiny
