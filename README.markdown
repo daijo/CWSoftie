@@ -5,8 +5,7 @@ A Arduino-based CW sidetone generator.
 
 The sidetone is generated in software and converted to a analog signal via PWM and a low-pass RC-filter.
 
-The end goal is a custom board/kit with a ATtiny MCU. In it's simplest configuration it shouldn't be much more \
-complex than the common 555-timer based circuit practise oscillator but still deliver a smooth, clickless sine wave signal.
+The end goal is a custom board/kit with a ATtiny MCU. In it's simplest configuration it shouldn't be much more complex than the common 555-timer based circuit practise oscillator but still deliver a smooth, clickless sine wave signal.
 
 Features
 --------
@@ -59,7 +58,7 @@ Requires the Arduino IDE installed in ARDUINODIR.
     make
     make upload
 
-For the ATtiny custom board/kit you also need the arduino-tiny additions found at <http://code.google.com/p/arduino-tiny/>. \
+For the ATtiny custom board/kit you also need the arduino-tiny additions found at <http://code.google.com/p/arduino-tiny/>. 
 You can also use my fork of Arduino with arduino-tiny <https://github.com/daijo/Arduino>.
 
     export BOARD=at2313at1
