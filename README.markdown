@@ -1,10 +1,9 @@
 CWSoftie
 ========
 
-A Arduino-based CW sidetone generator and keying filter.
+A Arduino-based CW sidetone generator.
 
-The sidetone is generated in software and converted to a analog signal via PWM and a low-pass RC-filter. \
-Both the sidetone and the keying envelope is softened by a gaussian curve with 5 ms rise and fall time.
+The sidetone is generated in software and converted to a analog signal via PWM and a low-pass RC-filter.
 
 The end goal is a custom board/kit with a ATtiny MCU. In it's simplest configuration it shouldn't be much more \
 complex than the common 555-timer based circuit practise oscillator but still deliver a smooth, clickless sine wave signal.
@@ -12,16 +11,15 @@ complex than the common 555-timer based circuit practise oscillator but still de
 Features
 --------
 
-* Debounced key input.
-* Square wave tone (Simple mode). The RC-filter + speaker make this tone pretty OK but it's still clicky.
+* Sine wave tone using PWM.
+* Adjustable sidetone frequency 0-1023Hz.
 
 Backlog
 -------
-* Sine wave tone using PWM (Advanced mode).
-* Adjustable sidetone frequency 500-1000Hz.
-* Gaussian wave envelope (Advanced mode).
+
+* Gaussian wave envelope.
 * Simple record and replay.
-* Keyer output with gausian envelope to help keep the transmitting bandwith down (sideband).
+* Keyer output.
 
 BOM
 ---
@@ -38,10 +36,11 @@ Input and non-audio output:
  * LED attached from pin 4 to ground
  * Key attached from pin 2 to +5V
  * 10K resistor attached from pin 2 to ground
-  
+ * Center pin of potentiometer connected to analog pin 0.
+
 Low pass filter (692 Hz):
 
-* 5K resistor attached from pin 3 (PWM) to output
+* 5K resistor attached from pin 11 (PWM) to output
 * 0.047uF cap from output to ground
 * output to amplifier
 
@@ -70,6 +69,7 @@ Reference
 ---------
 
 * <http://www.atmel.com/Images/doc2542.pdf>
+* <http://interface.khm.de/index.php/lab/experiments/arduino-dds-sinewave-generator/>
 * <http://www.w8ji.com/cw_bandwidth_described.htm>
 * <http://www.sm5bsz.com/txmod/rt0282eng.htm>
 * <http://www.solorb.com/elect/hamcirc/sidetone/> 

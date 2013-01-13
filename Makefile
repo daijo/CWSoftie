@@ -2,9 +2,9 @@
 #
 #                         edam's Arduino makefile
 #_______________________________________________________________________________
-#                                                                    version 0.3
+#                                                                    version 0.4
 #
-# Copyright (C) 2011, 1012 Tim Marston <tim@ed.am>.
+# Copyright (C) 2011, 2012 Tim Marston <tim@ed.am>.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -234,6 +234,10 @@ BOARD_UPLOAD_SPEED := \
 	$(shell sed -ne "s/$(BOARD).upload.speed=\(.*\)/\1/p" $(BOARDS_FILE))
 BOARD_UPLOAD_PROTOCOL := \
 	$(shell sed -ne "s/$(BOARD).upload.protocol=\(.*\)/\1/p" $(BOARDS_FILE))
+BOARD_USB_VID := \
+	$(shell sed -ne "s/$(BOARD).build.vid=\(.*\)/\1/p" $(BOARDS_FILE))
+BOARD_USB_PID := \
+	$(shell sed -ne "s/$(BOARD).build.pid=\(.*\)/\1/p" $(BOARDS_FILE))
 
 # invalid board?
 ifeq "$(BOARD_BUILD_MCU)" ""
@@ -249,10 +253,11 @@ CPPFLAGS := -Os -Wall -fno-exceptions -ffunction-sections -fdata-sections
 CPPFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 CPPFLAGS += -mmcu=$(BOARD_BUILD_MCU)
 CPPFLAGS += -DF_CPU=$(BOARD_BUILD_FCPU) -DARDUINO=$(ARDUINOCONST)
-CPPFLAGS += -I. -Iutil -Iutility -I$(ARDUINOCOREDIR)
-CPPFLAGS += -I$(ARDUINODIR)/hardware/arduino/variants/$(BOARD_BUILD_VARIANT)/
-CPPFLAGS += $(addprefix -I$(ARDUINODIR)/libraries/, $(LIBRARIES))
-CPPFLAGS += $(patsubst %, -I$(ARDUINODIR)/libraries/%/utility, $(LIBRARIES))
+CPPFLAGS += -DUSB_VID=$(BOARD_USB_VID) -DUSB_PID=$(BOARD_USB_PID)
+CPPFLAGS += -I. -Iutil -Iutility -I $(ARDUINOCOREDIR)
+CPPFLAGS += -I $(ARDUINODIR)/hardware/arduino/variants/$(BOARD_BUILD_VARIANT)/
+CPPFLAGS += $(addprefix -I $(ARDUINODIR)/libraries/, $(LIBRARIES))
+CPPFLAGS += $(patsubst %, -I $(ARDUINODIR)/libraries/%/utility, $(LIBRARIES))
 CPPDEPFLAGS = -MMD -MP -MF .dep/$<.dep
 CPPINOFLAGS := -x c++ -include $(ARDUINOCOREDIR)/Arduino.h
 AVRDUDEFLAGS := $(addprefix -C , $(AVRDUDECONF)) -DV
@@ -260,8 +265,9 @@ AVRDUDEFLAGS += -p $(BOARD_BUILD_MCU) -P $(SERIALDEV)
 AVRDUDEFLAGS += -c $(BOARD_UPLOAD_PROTOCOL) -b $(BOARD_UPLOAD_SPEED)
 LINKFLAGS := -Os -Wl,--gc-sections -mmcu=$(BOARD_BUILD_MCU)
 
-# figure out which arg to use with stty
-STTYFARG := $(shell stty --help > /dev/null 2>&1 && echo -F || echo -f)
+# figure out which arg to use with stty (for OS X, GNU and busybox stty)
+STTYFARG := $(shell stty --help 2>&1 | \
+	grep -q 'illegal option' && echo -f || echo -F)
 
 # include dependencies
 ifneq "$(MAKECMDGOALS)" "clean"
@@ -280,7 +286,7 @@ all: target
 
 target: $(TARGET).hex
 
-upload:
+upload: target
 	@echo "\nUploading to board..."
 	@test -n "$(SERIALDEV)" || { \
 		echo "error: SERIALDEV could not be determined automatically." >&2; \
@@ -298,9 +304,9 @@ clean:
 
 boards:
 	@echo Available values for BOARD:
-	@sed -ne '/^#/d; /^[^.]\+\.name=/p' $(BOARDS_FILE) | \
-		sed -e 's/\([^.]\+\)\.name=\(.*\)/\1            \2/' \
-			-e 's/\(.\{12\}\) *\(.*\)/\1 \2/'
+	@sed -nEe '/^#/d; /^[^.]+\.name=/p' $(BOARDS_FILE) | \
+		sed -Ee 's/([^.]+)\.name=(.*)/\1            \2/' \
+			-e 's/(.{12}) *(.*)/\1 \2/'
 
 monitor:
 	@test -n "$(SERIALDEV)" || { \
@@ -325,7 +331,7 @@ $(TARGET).hex: $(TARGET).elf
 .INTERMEDIATE: $(TARGET).elf
 
 $(TARGET).elf: $(ARDUINOLIB) $(OBJECTS)
-	$(CC) -lc $(LINKFLAGS) $(OBJECTS) $(ARDUINOLIB) -lm -lc -o $@
+	$(CC) $(LINKFLAGS) $(OBJECTS) $(ARDUINOLIB) -lm -o $@
 
 %.o: %.c
 	mkdir -p .dep/$(dir $<)
