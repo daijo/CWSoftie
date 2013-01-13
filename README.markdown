@@ -20,32 +20,29 @@ Backlog
 * Simple record and replay.
 * Keyer output.
 
-BOM
----
+Assembly
+--------
 
-TBD
+![CWSoftie prototype](https://farm9.staticflickr.com/8332/8375597913_f57e401473_z.jpg)
 
-Circuit
--------
+Pins assignment
+---------------
 
-### Using an Arduino board:
+| Arduino pin | Attached to |
+| :=========: | :=========: |
+| A0          | Pot slider  |
+| D2          | Key to VCC  |
+| D2          | 10K ohm to GND |
+| D4          | LED         |
+| D11         | Low-pass filter |
 
-Input and non-audio output:
-
- * LED attached from pin 4 to ground
- * Key attached from pin 2 to +5V
- * 10K resistor attached from pin 2 to ground
- * Center pin of potentiometer connected to analog pin 0.
+Potentiometer end terminals connected to GND and VCC.
 
 Low pass filter (692 Hz):
 
-* 5K resistor attached from pin 11 (PWM) to output
+* 5K resistor attached from D11 (PWM) to output
 * 0.047uF cap from output to ground
 * output to amplifier
-
-### Custom board
-
-TBD
 
 Build
 -----
