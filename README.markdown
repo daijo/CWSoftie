@@ -29,12 +29,12 @@ Pins assignment
 ---------------
 
 | Arduino pin | Attached to |
-| :=========: | :=========: |
-| A0          | Pot slider  |
-| D2          | Key to VCC  |
-| D2          | 10K ohm to GND |
-| D4          | LED         |
-| D11         | Low-pass filter |
+| :---------: | :---------: |
+| A0 | Pot slider |
+| D2 | Key to VCC |
+| D2 | 10K ohm to GND |
+| D4 | LED |
+| D11 | Low-pass filter |
 
 Potentiometer end terminals connected to GND and VCC.
 
