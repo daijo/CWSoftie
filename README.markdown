@@ -1,7 +1,7 @@
 CWSoftie
 ========
 
-A Arduino-based CW sidetone generator.
+A Arduino-based CW sidetone generator and keyer.
 
 The sidetone is generated in software and converted to a analog signal via PWM and a low-pass RC-filter.
 
@@ -16,9 +16,11 @@ Features
 Backlog
 -------
 
+* Keyboard keyer.
+* Keyer output.
+* Iambic keyer.
 * Gaussian wave envelope.
 * Simple record and replay.
-* Keyer output.
 
 Assembly
 --------
@@ -33,7 +35,9 @@ Pins assignment
 | A0 | Pot slider |
 | D2 | Key to VCC |
 | D2 | 10K ohm to GND |
+| D3 | PS/2 Keyboard CLK |
 | D4 | LED |
+| D7 | PS/2 Keyboard DATA |
 | D11 | Low-pass filter |
 
 Potentiometer end terminals connected to GND and VCC.
