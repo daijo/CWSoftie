@@ -2,9 +2,9 @@
 #
 #                         edam's Arduino makefile
 #_______________________________________________________________________________
-#                                                                    version 0.4
+#                                                                    version 0.3
 #
-# Copyright (C) 2011, 2012 Tim Marston <tim@ed.am>.
+# Copyright (C) 2011, 1012 Tim Marston <tim@ed.am>.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -146,6 +146,11 @@ ifeq "$(wildcard $(ARDUINODIR)/hardware/arduino/boards.txt)" ""
 $(error ARDUINODIR is not set correctly; arduino software not found)
 endif
 
+# default arduino port (no port)
+ifndef ARDUINOPORT
+ARDUINOPORT := "arduino"
+endif
+
 # default arduino version
 ARDUINOCONST ?= 100
 
@@ -198,7 +203,7 @@ AVRSIZE := $(call findsoftware,avr-size)
 TARGET := $(if $(TARGET),$(TARGET),a.out)
 OBJECTS := $(addsuffix .o, $(basename $(SOURCES)))
 DEPFILES := $(patsubst %, .dep/%.dep, $(SOURCES))
-ARDUINOCOREDIR := $(ARDUINODIR)/hardware/arduino/cores/arduino
+ARDUINOCOREDIR := $(ARDUINODIR)/hardware/$(ARDUINOPORT)/cores/$(ARDUINOPORT)
 ARDUINOLIB := .lib/arduino.a
 ARDUINOLIBLIBSDIR := $(ARDUINODIR)/libraries
 ARDUINOLIBLIBSPATH := $(foreach lib, $(LIBRARIES), \
@@ -223,7 +228,8 @@ endif
 endif
 
 # obtain board parameters from the arduino boards.txt file
-BOARDS_FILE := $(ARDUINODIR)/hardware/arduino/boards.txt
+
+BOARDS_FILE := $(ARDUINODIR)/hardware/arduino/boards.txt #$(ARDUINODIR)/hardware/$(ARDUINO_PORT)/boards.txt
 BOARD_BUILD_MCU := \
 	$(shell sed -ne "s/$(BOARD).build.mcu=\(.*\)/\1/p" $(BOARDS_FILE))
 BOARD_BUILD_FCPU := \
@@ -234,10 +240,6 @@ BOARD_UPLOAD_SPEED := \
 	$(shell sed -ne "s/$(BOARD).upload.speed=\(.*\)/\1/p" $(BOARDS_FILE))
 BOARD_UPLOAD_PROTOCOL := \
 	$(shell sed -ne "s/$(BOARD).upload.protocol=\(.*\)/\1/p" $(BOARDS_FILE))
-BOARD_USB_VID := \
-	$(shell sed -ne "s/$(BOARD).build.vid=\(.*\)/\1/p" $(BOARDS_FILE))
-BOARD_USB_PID := \
-	$(shell sed -ne "s/$(BOARD).build.pid=\(.*\)/\1/p" $(BOARDS_FILE))
 
 # invalid board?
 ifeq "$(BOARD_BUILD_MCU)" ""
@@ -253,21 +255,24 @@ CPPFLAGS := -Os -Wall -fno-exceptions -ffunction-sections -fdata-sections
 CPPFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 CPPFLAGS += -mmcu=$(BOARD_BUILD_MCU)
 CPPFLAGS += -DF_CPU=$(BOARD_BUILD_FCPU) -DARDUINO=$(ARDUINOCONST)
-CPPFLAGS += -DUSB_VID=$(BOARD_USB_VID) -DUSB_PID=$(BOARD_USB_PID)
-CPPFLAGS += -I. -Iutil -Iutility -I $(ARDUINOCOREDIR)
-CPPFLAGS += -I $(ARDUINODIR)/hardware/arduino/variants/$(BOARD_BUILD_VARIANT)/
-CPPFLAGS += $(addprefix -I $(ARDUINODIR)/libraries/, $(LIBRARIES))
-CPPFLAGS += $(patsubst %, -I $(ARDUINODIR)/libraries/%/utility, $(LIBRARIES))
+CPPFLAGS += -I. -Iutil -Iutility -I$(ARDUINOCOREDIR)
+ifeq "$(ARDUINOPORT)" "arduino"
+CPPFLAGS += -I$(ARDUINODIR)/hardware/arduino/variants/$(BOARD_BUILD_VARIANT)/
+else 
+CPPFLAGS += -I$(ARDUINODIR)/hardware/tiny/cores/tiny/
+endif
+CPPFLAGS += $(addprefix -I$(ARDUINODIR)/libraries/, $(LIBRARIES))
+CPPFLAGS += $(patsubst %, -I$(ARDUINODIR)/libraries/%/utility, $(LIBRARIES))
 CPPDEPFLAGS = -MMD -MP -MF .dep/$<.dep
+CPPCDEPFLAGS = -std=c99 -MMD -MP -MF .dep/$<.dep
 CPPINOFLAGS := -x c++ -include $(ARDUINOCOREDIR)/Arduino.h
 AVRDUDEFLAGS := $(addprefix -C , $(AVRDUDECONF)) -DV
 AVRDUDEFLAGS += -p $(BOARD_BUILD_MCU) -P $(SERIALDEV)
 AVRDUDEFLAGS += -c $(BOARD_UPLOAD_PROTOCOL) -b $(BOARD_UPLOAD_SPEED)
 LINKFLAGS := -Os -Wl,--gc-sections -mmcu=$(BOARD_BUILD_MCU)
 
-# figure out which arg to use with stty (for OS X, GNU and busybox stty)
-STTYFARG := $(shell stty --help 2>&1 | \
-	grep -q 'illegal option' && echo -f || echo -F)
+# figure out which arg to use with stty
+STTYFARG := $(shell stty --help > /dev/null 2>&1 && echo -F || echo -f)
 
 # include dependencies
 ifneq "$(MAKECMDGOALS)" "clean"
@@ -286,7 +291,7 @@ all: target
 
 target: $(TARGET).hex
 
-upload: target
+upload:
 	@echo "\nUploading to board..."
 	@test -n "$(SERIALDEV)" || { \
 		echo "error: SERIALDEV could not be determined automatically." >&2; \
@@ -304,9 +309,9 @@ clean:
 
 boards:
 	@echo Available values for BOARD:
-	@sed -nEe '/^#/d; /^[^.]+\.name=/p' $(BOARDS_FILE) | \
-		sed -Ee 's/([^.]+)\.name=(.*)/\1            \2/' \
-			-e 's/(.{12}) *(.*)/\1 \2/'
+	@sed -ne '/^#/d; /^[^.]\+\.name=/p' $(BOARDS_FILE) | \
+		sed -e 's/\([^.]\+\)\.name=\(.*\)/\1            \2/' \
+			-e 's/\(.\{12\}\) *\(.*\)/\1 \2/'
 
 monitor:
 	@test -n "$(SERIALDEV)" || { \
@@ -331,11 +336,11 @@ $(TARGET).hex: $(TARGET).elf
 .INTERMEDIATE: $(TARGET).elf
 
 $(TARGET).elf: $(ARDUINOLIB) $(OBJECTS)
-	$(CC) $(LINKFLAGS) $(OBJECTS) $(ARDUINOLIB) -lm -o $@
+	$(CC) -lc $(LINKFLAGS) $(OBJECTS) $(ARDUINOLIB) -lm -lc -o $@
 
 %.o: %.c
 	mkdir -p .dep/$(dir $<)
-	$(COMPILE.c) $(CPPDEPFLAGS) -o $@ $<
+	$(COMPILE.c) $(CPPCDEPFLAGS) -o $@ $<
 
 %.o: %.cpp
 	mkdir -p .dep/$(dir $<)
