@@ -148,7 +148,7 @@ endif
 
 # default arduino port (no port)
 ifndef ARDUINOPORT
-ARDUINOPORT := "arduino"
+ARDUINOPORT := arduino
 endif
 
 # default arduino version

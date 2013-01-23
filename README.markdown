@@ -11,12 +11,13 @@ Features
 --------
 
 * Sine wave tone using PWM.
-* Adjustable sidetone frequency 0-1023Hz.
+* Adjustable sidetone frequency 400-911Hz.
+* Adjustable keyer speed 5-37wpm.
+* Keyboard keyer.
 
 Backlog
 -------
 
-* Keyboard keyer.
 * Keyer output.
 * Iambic keyer.
 * Gaussian wave envelope.
@@ -32,7 +33,8 @@ Pins assignment
 
 | Arduino pin | Attached to |
 | :---------: | :---------: |
-| A0 | Pot slider |
+| A0 | Tone pot slider |
+| A1 | Speed pot slider |
 | D2 | Key to VCC |
 | D2 | 10K ohm to GND |
 | D3 | PS/2 Keyboard CLK |
