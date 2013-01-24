@@ -86,10 +86,12 @@ static void toneOn()
   digitalWrite(ledPin, true);
 }
 
-static void toneOff()
+static bool toneOff()
 {
+  bool change = (makeTone == true);
   makeTone = false;
   digitalWrite(ledPin, false);
+  return change;
 }
 
 /*
@@ -213,10 +215,13 @@ void loop() {
     double newFreq = (analogRead(tonePotPin) / 2) + 400; // on analog to adjust output frequency from 400..911 Hz
 
     if (fabs(newFreq - dfreq) > 5) {
+      bool change;
       dfreq = newFreq;
-      toneOff();                    // disable Timer2 Interrupt
+      change = toneOff();                    // disable Timer2 Interrupt
       tword_m = pow(2,32) * dfreq / refclk;  // calulate DDS new tuning word
-      toneOn();                    // enable Timer2 Interrupt
+      if(change) {
+        toneOn();                    // enable Timer2 Interrupt
+      }
     }
   }
 
