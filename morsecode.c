@@ -9,7 +9,7 @@
 
 morsecode_t ham_morse_from_ascii(char character)
 {
-	morsecode_t result = "not found";
+	morsecode_t result = "";
 	char toFind = character;
 
 	if (toFind >= 'a' && toFind <= 'z') {

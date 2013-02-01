@@ -27,7 +27,8 @@ const char PROGMEM sine256[]  = {
 #define SPEED_POT_PIN 1
 #define KEY_PIN 2
 #define KEYBOARD_CLK_PIN 3
-#define LED_PIN 4
+#define KEY_OUT_PIN 4
+#define LED_PIN 13
 #define KEYBOARD_DATA_PIN 7
 #define SOUND_PIN 11
 
@@ -42,6 +43,7 @@ const uint8_t tonePotPin = TONE_POT_PIN;
 const uint8_t speedPotPin = SPEED_POT_PIN;
 const uint8_t keyPin = KEY_PIN;
 const uint8_t keyboardClkPin = KEYBOARD_CLK_PIN;
+const uint8_t keyOutPin = KEY_OUT_PIN;
 const uint8_t ledPin = LED_PIN;
 const uint8_t keyboardDataPin = KEYBOARD_DATA_PIN;
 const uint8_t soundPin = SOUND_PIN;
@@ -65,6 +67,13 @@ uint8_t dotMs = (uint16_t)(1000 * ham_morse_element_time(DOT, speed, STD_WORD_PA
 volatile int16_t keyerMsLeft = 0;
 uint8_t elementsLeft = 0;
 
+//Command mode
+bool commandMode = false;
+bool overrideTone = false;
+bool overrideSpeed = false;
+uint16_t commandTone = 700;
+uint8_t commandSpeed = 20;
+
 double dfreq;
 /* const double refclk=31372.549;  // =16MHz / 510 */
 const double refclk=31376.6;       // measured
@@ -84,6 +93,7 @@ static void toneOn()
 {
   makeTone = true;
   digitalWrite(ledPin, true);
+  digitalWrite(keyOutPin, true);
 }
 
 static bool toneOff()
@@ -91,6 +101,7 @@ static bool toneOff()
   bool change = (makeTone == true);
   makeTone = false;
   digitalWrite(ledPin, false);
+  digitalWrite(keyOutPin, false);
   return change;
 }
 
@@ -184,10 +195,48 @@ static void writeToBuffer(char c)
   nextWrite += 1;
 }
 
+static void command(char c)
+{
+  if ('t' == c) {
+    overrideTone = !overrideTone;
+    Serial.print(" Overriding tone pot ");
+    Serial.println(overrideTone);
+  } else if ('s' == c) {
+    overrideSpeed = !overrideSpeed;
+    Serial.print(" Overriding speed pot ");
+    Serial.println(overrideSpeed);
+  } else if ('d' == c && commandSpeed < 50) {
+    commandSpeed++;
+    Serial.print(" Speed up ");
+    Serial.println(commandSpeed);
+  }  else if ('a' == c && commandSpeed > 5) {
+    commandSpeed--;
+    Serial.print(" Speed down ");
+    Serial.println(commandSpeed);
+  } else if ('y' == c && commandTone < 1000) {
+    commandTone = commandTone + 10;
+    Serial.print(" Tone up ");
+    Serial.println(commandTone);
+  }  else if ('r' == c && commandTone > 300) {
+    commandTone = commandTone - 10;
+    Serial.print(" Tone down ");
+    Serial.println(commandTone);
+  } else if ('h' == c) {
+    Serial.println("~ Toggle command mode.");
+    Serial.println("s Toggle speed pot override.");
+    Serial.println("d Speed up.");
+    Serial.println("a Speed down.");
+    Serial.println("t Toggle tone pot override.");
+    Serial.println("y Tone up.");
+    Serial.println("r Tone down.");
+  }
+}
+
 void setup() {
 
   pinMode(keyPin, INPUT);
   pinMode(ledPin, OUTPUT);
+  pinMode(keyOutPin, OUTPUT);
   pinMode(soundPin, OUTPUT);     // PWM  output
 
   Setup_timer2();
@@ -214,6 +263,10 @@ void loop() {
     
     double newFreq = (analogRead(tonePotPin) / 2) + 400; // on analog to adjust output frequency from 400..911 Hz
 
+    if(overrideTone) {
+      newFreq = commandTone;
+    }
+
     if (fabs(newFreq - dfreq) > 5) {
       bool change;
       dfreq = newFreq;
@@ -235,21 +288,37 @@ void loop() {
       toneOff();
     }
   }
-  
-  if (keyboard.available()) {
 
-    // read the next key
-    char c = keyboard.read();
-    if (c != ' ') {
-      char* code = ham_morse_from_ascii(c);
-      writeToBuffer(c);
-    }
+  char c = ' ';
+  bool didRead = false;
+
+  if (keyboard.available()) {
+    c = keyboard.read();
+    didRead = true;
+  } else if (Serial.available()) {
+    c = Serial.read();
+    didRead = true;
+  }
+
+  if (c == '~') {
+    commandMode = !commandMode;
+    Serial.println("");
+  }
+
+  if (!commandMode && c != ' ') {
+    writeToBuffer(c);
+  } else if (didRead && commandMode) {
+    command(c);
   }
 
   if (!keyState
         && nextWrite > nextRead
         && keyerState == KEYER_IDLE) {
-      speed = (analogRead(speedPotPin) / 32) + 5; // 1023 / 32
+      if (!overrideSpeed) {
+        speed = (analogRead(speedPotPin) / 32) + 5; // 1023 / 32
+      } else {
+        speed = commandSpeed;
+      }
       dotMs = (uint16_t)(1000*ham_morse_element_time(DOT, speed, STD_WORD_PARIS_LEN));
       char nextChar = readFromBuffer();
       if(nextChar != 0) {

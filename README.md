@@ -5,8 +5,6 @@ A Arduino-based CW sidetone generator and keyer.
 
 The sidetone is generated in software and converted to a analog signal via PWM and a low-pass RC-filter.
 
-The end goal is a custom board/kit with a ATtiny MCU. In it's simplest configuration it shouldn't be much more complex than the common 555-timer based circuit practise oscillator but still deliver a smooth, clickless sine wave signal.
-
 Features
 --------
 
@@ -14,11 +12,13 @@ Features
 * Adjustable sidetone frequency 400-911Hz.
 * Adjustable keyer speed 5-37wpm.
 * Keyboard keyer.
+* Serial keyer.
+* Keyer output.
+* Command mode (set speed and tone).
 
 Backlog
 -------
 
-* Keyer output.
 * Iambic keyer.
 * Gaussian wave envelope.
 * Simple record and replay.
