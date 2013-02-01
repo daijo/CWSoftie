@@ -40,11 +40,11 @@ Pins assignment
 | :---------: | :---------: |
 | A0 | Tone pot slider |
 | A1 | Speed pot slider |
-| D2 | Paddle/key 3.5mm stereo plug tip |
+| D2 | Paddle dit/key 3.5mm stereo plug tip |
 | D2 | 10K ohm to GND |
 | D3 | PS/2 Keyboard CLK |
 | D4 | Keyer output circuit |
-| D5 | Paddle/key 3.5mm stereo plug ring |
+| D5 | Paddle dah 3.5mm stereo plug ring |
 | D5 | 10K ohm to GND |
 | D7 | PS/2 Keyboard DATA |
 | D11 | Low-pass filter |
