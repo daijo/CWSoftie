@@ -33,6 +33,13 @@ Assembly
 
 ![CWSoftie prototype](https://farm9.staticflickr.com/8332/8375597913_f57e401473_z.jpg)
 
+Characterisation
+----------------
+
+![CWSoftie pwm output](https://farm9.staticflickr.com/8510/8562177872_b91cdb5b3b_o.png)
+
+![CWSoftie sine output](https://farm9.staticflickr.com/8377/8561073045_a92b71a7e7_o.png)
+
 Pins assignment
 ---------------
 
@@ -64,6 +71,8 @@ Keyer output circuit:
 * D4 to Logic level N-channel MOSFET gate pin
 * MOSFET source pin to GND
 * MOSFET drain pin to keyer output
+
+
 
 Build
 -----
